@@ -30,6 +30,7 @@ jobs:
             ${{ format('mingw-w64-{0}-gcc', matrix.target.arch) }}
             ${{ format('mingw-w64-{0}-cmake', matrix.target.arch) }}
             ${{ format('mingw-w64-{0}-ninja', matrix.target.arch) }}
+            ${{ format('mingw-w64-{0}-binutils', matrix.target.arch) }} 
 
       - name: Configure
         shell: msys2 {0}
