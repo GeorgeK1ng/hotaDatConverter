@@ -1,4 +1,4 @@
-name: Build hotaDatConverter (Windows)
+name: Build XP-static (MinGW-w64)
 
 on:
   push:
@@ -6,26 +6,51 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-windows:
+  build:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        target:
+          - { msystem: MINGW32, arch: i686,   triplet: i686-w64-mingw32,   toolchain: cmake/toolchain-mingw32-xp.cmake,  subsys: "5.01", tag: winxp-x86 }
+          - { msystem: MINGW64, arch: x86_64, triplet: x86_64-w64-mingw32, toolchain: cmake/toolchain-mingw64-xp.cmake,  subsys: "5.02", tag: winxp-x64 }
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      # Configure a Release build using Ninja generator
-      - name: Configure (CMake + Ninja)
-        run: cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.target.msystem }}
+          update: true
+          install: >-
+            base-devel
+            git
+            ninja
+            ${{ format('mingw-w64-{0}-gcc', matrix.target.arch) }}
+            ${{ format('mingw-w64-{0}-cmake', matrix.target.arch) }}
+            ${{ format('mingw-w64-{0}-ninja', matrix.target.arch) }}
 
-      # Build the project
+      - name: Configure
+        shell: msys2 {0}
+        run: |
+          cmake -S . -B build-${{ matrix.target.tag }} \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE=${{ matrix.target.toolchain }} \
+            -DCMAKE_BUILD_TYPE=Release
+
       - name: Build
-        run: cmake --build build --config Release --parallel
+        shell: msys2 {0}
+        run: cmake --build build-${{ matrix.target.tag }} --config Release --parallel
 
-      # Upload the EXE artifact
+      - name: Show imports (optional)
+        shell: msys2 {0}
+        run: |
+          ${{ matrix.target.triplet }}-objdump -p build-${{ matrix.target.tag }}/hotaDatConverter.exe | sed -n '/DLL Name/p;/DLL characteristics/p'
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: hotaDatConverter-windows
-          path: |
-            build/hotaDatConverter.exe
+          name: hotaDatConverter-${{ matrix.target.tag }}
+          path: build-${{ matrix.target.tag }}/hotaDatConverter.exe
           if-no-files-found: error
