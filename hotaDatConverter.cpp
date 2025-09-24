@@ -56,6 +56,7 @@
 #include <iostream>
 #include <algorithm>
 #include <unordered_map>
+#include <windows.h>
 
 #include "nlohmann/json.hpp"
 
