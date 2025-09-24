@@ -30,7 +30,6 @@ jobs:
             ${{ format('mingw-w64-{0}-gcc', matrix.target.arch) }}
             ${{ format('mingw-w64-{0}-cmake', matrix.target.arch) }}
             ${{ format('mingw-w64-{0}-ninja', matrix.target.arch) }}
-            ${{ format('mingw-w64-{0}-binutils', matrix.target.arch) }} 
 
       - name: Configure
         shell: msys2 {0}
@@ -43,11 +42,6 @@ jobs:
       - name: Build
         shell: msys2 {0}
         run: cmake --build build-${{ matrix.target.tag }} --config Release --parallel
-
-      - name: Show imports (optional)
-        shell: msys2 {0}
-        run: |
-          ${{ matrix.target.triplet }}-objdump -p build-${{ matrix.target.tag }}/hotaDatConverter.exe | sed -n '/DLL Name/p;/DLL characteristics/p'
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
