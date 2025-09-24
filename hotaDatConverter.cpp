@@ -57,11 +57,6 @@
 #include <algorithm>
 #include <unordered_map>
 
-#ifdef _WIN32
-#define NOMINMAX
-#include <windows.h>
-#endif
-
 #include "nlohmann/json.hpp"
 
 using json = nlohmann::json;
