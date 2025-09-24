@@ -1,0 +1,31 @@
+name: Build hotaDatConverter (Windows)
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Configure a Release build using Ninja generator
+      - name: Configure (CMake + Ninja)
+        run: cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+
+      # Build the project
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      # Upload the EXE artifact
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hotaDatConverter-windows
+          path: |
+            build/hotaDatConverter.exe
+          if-no-files-found: error
